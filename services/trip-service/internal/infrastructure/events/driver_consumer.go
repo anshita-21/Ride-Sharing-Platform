@@ -68,6 +68,11 @@ func (c *driverConsumer) handleTripDeclined(ctx context.Context, tripID, riderID
 		return err
 	}
 
+	if trip == nil {
+		log.Printf("Trip not found: %s", tripID)
+		return fmt.Errorf("trip not found: %s", tripID)
+	}
+
 	newPayload := messaging.TripEventData{
 		Trip: trip.ToProto(),
 	}

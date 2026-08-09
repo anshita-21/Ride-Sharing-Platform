@@ -156,8 +156,9 @@ func estimateFareRoute(f *domain.RideFareModel, route *tripTypes.OsrmApiResponse
 	pricingCfg := tripTypes.DefaultPricingConfig()
 	carPackagePrice := f.TotalPriceInCents
 
-	distanceKm := route.Routes[0].Distance
-	durationInMinutes := route.Routes[0].Duration
+	// OSRM returns Distance in meters and Duration in seconds
+	distanceKm := route.Routes[0].Distance / 1000.0
+	durationInMinutes := route.Routes[0].Duration / 60.0
 
 	distanceFare := distanceKm * pricingCfg.PricePerUnitOfDistance
 	timeFare := durationInMinutes * pricingCfg.PricingPerMinute
@@ -172,20 +173,20 @@ func estimateFareRoute(f *domain.RideFareModel, route *tripTypes.OsrmApiResponse
 func getBaseFares() []*domain.RideFareModel {
 	return []*domain.RideFareModel{
 		{
-			PackageSlug:       "suv",
-			TotalPriceInCents: 5000, // ₹50.00
+			PackageSlug:       "sedan",
+			TotalPriceInCents: 1500, // ₹15.00
 		},
 		{
-			PackageSlug:       "sedan",
-			TotalPriceInCents: 6500, // ₹65.00
+			PackageSlug:       "suv",
+			TotalPriceInCents: 2000, // ₹20.00
 		},
 		{
 			PackageSlug:       "van",
-			TotalPriceInCents: 8000, // ₹80.00
+			TotalPriceInCents: 2500, // ₹25.00
 		},
 		{
 			PackageSlug:       "luxury",
-			TotalPriceInCents: 15000, // ₹150.00
+			TotalPriceInCents: 4000, // ₹40.00
 		},
 	}
 }
