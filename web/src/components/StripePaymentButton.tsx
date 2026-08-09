@@ -47,7 +47,7 @@ export const StripePaymentButton = ({
       disabled={isLoading}
       className="w-full"
     >
-      {isLoading ? "Loading..." : `Pay ₹${(paymentSession.amount / 100).toFixed(2)} (${paymentSession.currency})`}
+      {isLoading ? "Loading..." : `Pay ₹${paymentSession.amount.toFixed(2)} (${paymentSession.currency})`}
     </Button>
   )
 } 

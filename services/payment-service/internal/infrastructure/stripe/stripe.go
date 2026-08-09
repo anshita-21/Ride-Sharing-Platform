@@ -3,7 +3,6 @@ package stripe
 import (
 	"context"
 	"fmt"
-	"strings"
 	"ride-sharing/services/payment-service/internal/domain"
 	"ride-sharing/services/payment-service/pkg/types"
 
@@ -24,14 +23,9 @@ func NewStripeClient(config *types.PaymentConfig) domain.PaymentProcessor {
 }
 
 func (s *stripeClient) CreatePaymentSession(ctx context.Context, amount int64, currency string, metadata map[string]string) (string, error) {
-	// Stripe minimum amount limits per currency to prevent 'amount_too_small' error
-	minAmount := int64(50) // $0.50 USD default min
-	if strings.EqualFold(currency, "INR") {
-		minAmount = 5000 // ₹50.00 (5000 paise) minimum for Stripe in INR
-	}
-
-	if amount < minAmount {
-		amount = minAmount
+	// Ensure amount is at least 1 unit to satisfy Stripe API schema
+	if amount <= 0 {
+		amount = 100 // Default 100 paise (₹1.00) fallback
 	}
 
 	params := &stripe.CheckoutSessionParams{

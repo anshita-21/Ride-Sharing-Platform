@@ -56,20 +56,26 @@ export const useDriverStreamConnection = ({
 
       switch (message.type) {
         case TripEvents.DriverTripRequest:
-          const trip = (message.data?.trip) ?? message.data;
-          if (trip) {
-            const rawTrip = trip as unknown as Record<string, string>;
-            const tripID = trip.id || rawTrip?.tripID;
-            if (tripID) {
-              setRequestedTrips((prev) => {
-                if (prev.some((t) => (t.id || (t as unknown as Record<string, string>)?.tripID) === tripID)) {
-                  return prev;
-                }
-                return [...prev, trip];
-              });
-              setTripStatus(TripEvents.DriverTripRequest);
+          // Ignore incoming trip requests if driver is already on an accepted active trip
+          setTripStatus((currentStatus) => {
+            if (currentStatus === TripEvents.DriverTripAccept) {
+              return currentStatus;
             }
-          }
+            const trip = (message.data?.trip) ?? message.data;
+            if (trip) {
+              const rawTrip = trip as unknown as Record<string, string>;
+              const tripID = trip.id || rawTrip?.tripID;
+              if (tripID) {
+                setRequestedTrips((prev) => {
+                  if (prev.some((t) => (t.id || (t as unknown as Record<string, string>)?.tripID) === tripID)) {
+                    return prev;
+                  }
+                  return [...prev, trip];
+                });
+              }
+            }
+            return TripEvents.DriverTripRequest;
+          });
           break;
         case TripEvents.DriverRegister:
           const driverData = (message.data as unknown as { driver?: Driver })?.driver ?? (message.data as Driver);
@@ -113,6 +119,11 @@ export const useDriverStreamConnection = ({
     }
   };
 
+  const acceptCurrentTrip = () => {
+    setTripStatus(TripEvents.DriverTripAccept);
+    setRequestedTrips((prev) => (prev.length > 0 ? [prev[0]] : []));
+  };
+
   const resetTripStatus = () => {
     setRequestedTrips((prev) => {
       const next = prev.slice(1);
@@ -132,6 +143,7 @@ export const useDriverStreamConnection = ({
     requestedTrip,
     requestedTrips,
     pendingCount: requestedTrips.length,
+    acceptCurrentTrip,
     resetTripStatus,
     sendMessage,
     setTripStatus

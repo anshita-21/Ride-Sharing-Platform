@@ -28,7 +28,8 @@ export function DriverList({ trip, onPackageSelect, onCancel, isRequesting, load
           {trip?.rideFares.map((fare) => {
             const Icon = PackagesMeta[fare.packageSlug].icon;
             const price = fare.totalPriceInCents && `₹${(fare.totalPriceInCents / 100).toFixed(2)}`
-            const isLoadingThis = loadingPackageId === fare.id || (isRequesting && !loadingPackageId);
+            const isTripActiveOrRequesting = isRequesting || Boolean(trip?.tripID);
+            const isLoadingThis = loadingPackageId === fare.id || (isTripActiveOrRequesting && !loadingPackageId);
 
             return (
               <div
@@ -36,9 +37,9 @@ export function DriverList({ trip, onPackageSelect, onCancel, isRequesting, load
                 className={cn(
                   "flex items-center justify-between p-4 rounded-lg border transition-all cursor-pointer",
                   "hover:border-primary hover:bg-primary/5",
-                  isRequesting && "opacity-60 pointer-events-none cursor-not-allowed"
+                  isTripActiveOrRequesting && "opacity-60 pointer-events-none cursor-not-allowed"
                 )}
-                onClick={() => !isRequesting && onPackageSelect(fare)}
+                onClick={() => !isTripActiveOrRequesting && onPackageSelect(fare)}
               >
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-gray-100 rounded-lg">
