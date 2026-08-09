@@ -19,11 +19,13 @@ export const useDriverStreamConnection = ({
   userID,
   packageSlug
 }: useDriverConnectionProps) => {
-  const [requestedTrip, setRequestedTrip] = useState<Trip | null>(null)
+  const [requestedTrips, setRequestedTrips] = useState<Trip[]>([]);
   const [tripStatus, setTripStatus] = useState<TripEvents | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [driver, setDriver] = useState<Driver | null>(null);
+
+  const requestedTrip = requestedTrips[0] || null;
 
   useEffect(() => {
     if (!userID) return;
@@ -55,7 +57,19 @@ export const useDriverStreamConnection = ({
       switch (message.type) {
         case TripEvents.DriverTripRequest:
           const trip = (message.data?.trip) ?? message.data;
-          setRequestedTrip(trip);
+          if (trip) {
+            const rawTrip = trip as unknown as Record<string, string>;
+            const tripID = trip.id || rawTrip?.tripID;
+            if (tripID) {
+              setRequestedTrips((prev) => {
+                if (prev.some((t) => (t.id || (t as unknown as Record<string, string>)?.tripID) === tripID)) {
+                  return prev;
+                }
+                return [...prev, trip];
+              });
+              setTripStatus(TripEvents.DriverTripRequest);
+            }
+          }
           break;
         case TripEvents.DriverRegister:
           const driverData = (message.data as unknown as { driver?: Driver })?.driver ?? (message.data as Driver);
@@ -65,7 +79,9 @@ export const useDriverStreamConnection = ({
 
 
       if (isValidTripEvent(message.type)) {
-        setTripStatus(message.type);
+        if (message.type !== TripEvents.DriverTripRequest) {
+          setTripStatus(message.type);
+        }
       } else {
         setError(`Unknown message type "${message.type}", allowed types are: ${Object.values(TripEvents).join(', ')}`);
       }
@@ -98,9 +114,26 @@ export const useDriverStreamConnection = ({
   };
 
   const resetTripStatus = () => {
-    setTripStatus(null);
-    setRequestedTrip(null);
-  }
+    setRequestedTrips((prev) => {
+      const next = prev.slice(1);
+      if (next.length === 0) {
+        setTripStatus(null);
+      } else {
+        setTripStatus(TripEvents.DriverTripRequest);
+      }
+      return next;
+    });
+  };
 
-  return { error, tripStatus, driver, requestedTrip, resetTripStatus, sendMessage, setTripStatus };
+  return {
+    error,
+    tripStatus,
+    driver,
+    requestedTrip,
+    requestedTrips,
+    pendingCount: requestedTrips.length,
+    resetTripStatus,
+    sendMessage,
+    setTripStatus
+  };
 }

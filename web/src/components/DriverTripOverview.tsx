@@ -6,11 +6,12 @@ import { TripEvents } from "../contracts"
 interface DriverTripOverviewProps {
   trip?: Trip | null,
   status?: TripEvents | null,
+  pendingCount?: number,
   onAcceptTrip?: () => void,
   onDeclineTrip?: () => void
 }
 
-export const DriverTripOverview = ({ trip, status, onAcceptTrip, onDeclineTrip }: DriverTripOverviewProps) => {
+export const DriverTripOverview = ({ trip, status, pendingCount = 0, onAcceptTrip, onDeclineTrip }: DriverTripOverviewProps) => {
   if (!trip || status === TripEvents.DriverTripDecline) {
     return (
       <TripOverviewCard
@@ -23,8 +24,8 @@ export const DriverTripOverview = ({ trip, status, onAcceptTrip, onDeclineTrip }
   if (status === TripEvents.DriverTripRequest) {
     return (
       <TripOverviewCard
-        title="Trip request received!"
-        description="A trip has been requested, check the route and accept the trip if you can take it."
+        title={pendingCount > 1 ? `Trip request received (${pendingCount} pending)` : "Trip request received!"}
+        description={pendingCount > 1 ? `You have ${pendingCount} trip requests waiting. Accept or decline the current request to view the next.` : "A trip has been requested, check the route and accept the trip if you can take it."}
       >
         <div className="flex flex-col gap-2">
           <Button onClick={onAcceptTrip}>Accept trip</Button>
