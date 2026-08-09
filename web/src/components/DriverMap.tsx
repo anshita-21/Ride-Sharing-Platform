@@ -70,7 +70,11 @@ export const DriverMap = ({ packageSlug }: { packageSlug: CarPackageSlug }) => {
   }
 
   const handleAcceptTrip = () => {
-    if (!requestedTrip || !requestedTrip.id || !driver) {
+    const rawTrip = requestedTrip as unknown as Record<string, string>
+    const tripID = requestedTrip?.id || rawTrip?.tripID
+    const riderID = requestedTrip?.userID || rawTrip?.userID || rawTrip?.riderID
+
+    if (!requestedTrip || !tripID || !driver) {
       alert("No trip ID found or driver is not set")
       return
     }
@@ -78,18 +82,21 @@ export const DriverMap = ({ packageSlug }: { packageSlug: CarPackageSlug }) => {
     sendMessage({
       type: TripEvents.DriverTripAccept,
       data: {
-        tripID: requestedTrip.id,
-        riderID: requestedTrip.userID,
+        tripID: tripID,
+        riderID: riderID,
         driver: driver,
       }
     })
 
     setTripStatus(TripEvents.DriverTripAccept)
-
   }
 
   const handleDeclineTrip = () => {
-    if (!requestedTrip || !requestedTrip.id || !driver) {
+    const rawTrip = requestedTrip as unknown as Record<string, string>
+    const tripID = requestedTrip?.id || rawTrip?.tripID
+    const riderID = requestedTrip?.userID || rawTrip?.userID || rawTrip?.riderID
+
+    if (!requestedTrip || !tripID || !driver) {
       alert("No trip ID found or driver is not set")
       return
     }
@@ -97,8 +104,8 @@ export const DriverMap = ({ packageSlug }: { packageSlug: CarPackageSlug }) => {
     sendMessage({
       type: TripEvents.DriverTripDecline,
       data: {
-        tripID: requestedTrip.id,
-        riderID: requestedTrip.userID,
+        tripID: tripID,
+        riderID: riderID,
         driver: driver,
       }
     })

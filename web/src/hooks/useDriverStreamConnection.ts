@@ -58,7 +58,8 @@ export const useDriverStreamConnection = ({
           setRequestedTrip(trip);
           break;
         case TripEvents.DriverRegister:
-          setDriver(message.data);
+          const driverData = (message.data as unknown as { driver?: Driver })?.driver ?? (message.data as Driver);
+          setDriver(driverData);
           break;
       }
 

@@ -11,7 +11,7 @@ interface DriverTripOverviewProps {
 }
 
 export const DriverTripOverview = ({ trip, status, onAcceptTrip, onDeclineTrip }: DriverTripOverviewProps) => {
-  if (!trip) {
+  if (!trip || status === TripEvents.DriverTripDecline) {
     return (
       <TripOverviewCard
         title="Waiting for a rider..."
