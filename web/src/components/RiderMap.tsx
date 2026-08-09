@@ -112,32 +112,45 @@ export default function RiderMap({ onRouteSelected }: RiderMapProps) {
         return data
     }
 
+    const [isRequesting, setIsRequesting] = useState(false);
+    const [loadingPackageId, setLoadingPackageId] = useState<string | null>(null);
+
     const handleStartTrip = async (fare: RouteFare) => {
-        const payload = {
-            rideFareID: fare.id,
-            userID: userID,
-        } as HTTPTripStartRequestPayload
+        if (isRequesting) return;
+        setIsRequesting(true);
+        setLoadingPackageId(fare.id);
 
-        if (!fare.id) {
-            alert("No Fare ID in the payload")
-            return
+        try {
+            const payload = {
+                rideFareID: fare.id,
+                userID: userID,
+            } as HTTPTripStartRequestPayload
+
+            if (!fare.id) {
+                alert("No Fare ID in the payload")
+                return
+            }
+
+            const response = await fetch(`${API_URL}${BackendEndpoints.START_TRIP}`, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            })
+            const data = await response.json() as HTTPTripStartResponse
+
+            if (response.ok && trip) {
+                setTrip((prev) => ({
+                    ...prev,
+                    tripID: data.tripID,
+                } as TripPreview))
+            }
+
+            return data
+        } catch (err) {
+            console.error("Failed to start trip:", err);
+        } finally {
+            setIsRequesting(false);
+            setLoadingPackageId(null);
         }
-
-        const response = await fetch(`${API_URL}${BackendEndpoints.START_TRIP}`, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-        })
-        const data = await response.json() as HTTPTripStartResponse
-
-        if (response.ok && trip) {
-            setTrip((prev) => ({
-                ...prev,
-                tripID: data.tripID,
-            } as TripPreview))
-
-        }
-
-        return data
     }
 
     const handleCancelTrip = () => {
@@ -231,6 +244,8 @@ export default function RiderMap({ onRouteSelected }: RiderMapProps) {
                     assignedDriver={assignedDriver}
                     status={tripStatus}
                     paymentSession={paymentSession}
+                    isRequesting={isRequesting}
+                    loadingPackageId={loadingPackageId}
                     onPackageSelect={handleStartTrip}
                     onCancel={handleCancelTrip}
                 />

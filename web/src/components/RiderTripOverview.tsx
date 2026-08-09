@@ -14,6 +14,8 @@ interface TripOverviewProps {
   status: TripEvents | null;
   assignedDriver?: Driver | null;
   paymentSession?: PaymentEventSessionCreatedData | null;
+  isRequesting?: boolean;
+  loadingPackageId?: string | null;
   onPackageSelect: (carPackage: RouteFare) => void;
   onCancel: () => void;
 }
@@ -23,6 +25,8 @@ export const RiderTripOverview = ({
   status,
   assignedDriver,
   paymentSession,
+  isRequesting,
+  loadingPackageId,
   onPackageSelect,
   onCancel,
 }: TripOverviewProps) => {
@@ -112,7 +116,7 @@ export const RiderTripOverview = ({
   if (status === TripEvents.Created) {
     return (
       <TripOverviewCard
-        title="Looking for a driver"
+        title="Finding a driver for you..."
         description="Your trip is confirmed! We&apos;re matching you with a driver, it should not take long."
       >
         <div className="flex flex-col space-y-3 justify-center items-center mb-4">
@@ -140,6 +144,8 @@ export const RiderTripOverview = ({
     return (
       <DriverList
         trip={trip}
+        isRequesting={isRequesting}
+        loadingPackageId={loadingPackageId}
         onPackageSelect={onPackageSelect}
         onCancel={onCancel}
       />

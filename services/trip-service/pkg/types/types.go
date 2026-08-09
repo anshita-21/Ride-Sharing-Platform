@@ -41,7 +41,7 @@ type PricingConfig struct {
 
 func DefaultPricingConfig() *PricingConfig {
 	return &PricingConfig{
-		PricePerUnitOfDistance: 1.5,
-		PricingPerMinute:       0.25,
+		PricePerUnitOfDistance: 0.0001,
+		PricingPerMinute:       0.0002,
 	}
 }

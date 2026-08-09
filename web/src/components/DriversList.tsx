@@ -7,12 +7,14 @@ import { PackagesMeta } from "./PackagesMeta"
 
 interface DriverListProps {
   trip: TripPreview | null;
-  onPackageSelect: (fare: RouteFare) => void
-  onCancel: () => void
+  onPackageSelect: (fare: RouteFare) => void;
+  onCancel: () => void;
+  isRequesting?: boolean;
+  loadingPackageId?: string | null;
 }
 
 
-export function DriverList({ trip, onPackageSelect, onCancel }: DriverListProps) {
+export function DriverList({ trip, onPackageSelect, onCancel, isRequesting, loadingPackageId }: DriverListProps) {
   return (
     <div className="flex items-center justify-center p-4 min-h-screen bg-black/20">
       <div className="bg-white rounded-2xl shadow-lg p-6 max-w-md w-full">
@@ -26,6 +28,7 @@ export function DriverList({ trip, onPackageSelect, onCancel }: DriverListProps)
           {trip?.rideFares.map((fare) => {
             const Icon = PackagesMeta[fare.packageSlug].icon;
             const price = fare.totalPriceInCents && `₹${(fare.totalPriceInCents / 100).toFixed(2)}`
+            const isLoadingThis = loadingPackageId === fare.id || (isRequesting && !loadingPackageId);
 
             return (
               <div
@@ -33,8 +36,9 @@ export function DriverList({ trip, onPackageSelect, onCancel }: DriverListProps)
                 className={cn(
                   "flex items-center justify-between p-4 rounded-lg border transition-all cursor-pointer",
                   "hover:border-primary hover:bg-primary/5",
+                  isRequesting && "opacity-60 pointer-events-none cursor-not-allowed"
                 )}
-                onClick={() => onPackageSelect(fare)}
+                onClick={() => !isRequesting && onPackageSelect(fare)}
               >
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-gray-100 rounded-lg">
@@ -42,11 +46,17 @@ export function DriverList({ trip, onPackageSelect, onCancel }: DriverListProps)
                   </div>
                   <div>
                     <h3 className="font-medium">{PackagesMeta[fare.packageSlug].name}</h3>
-                    <p className="text-sm text-gray-500">{PackagesMeta[fare.packageSlug].description}</p>
+                    <p className="text-sm text-gray-500">
+                      {isLoadingThis ? "Finding a driver for you..." : PackagesMeta[fare.packageSlug].description}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">{price}</p>
+                  {isLoadingThis ? (
+                    <span className="text-xs font-semibold text-primary animate-pulse">Finding driver...</span>
+                  ) : (
+                    <p className="font-semibold">{price}</p>
+                  )}
                 </div>
               </div>
             );
@@ -56,6 +66,7 @@ export function DriverList({ trip, onPackageSelect, onCancel }: DriverListProps)
           <Button
             variant="outline"
             className="w-full"
+            disabled={isRequesting}
             onClick={() => onCancel()}
           >
             Back to Map
